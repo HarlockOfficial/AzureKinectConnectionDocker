@@ -15,7 +15,11 @@ Steps that made it work on my system (Debian 12 with NVIDIA 3060 Laptop GPU and 
 > NOTE: In this project I used:
 > - several online references (as well as MS Copilot and ChatGPT generated code/scripts) 
 > - adapted several sources/comments/issues/solutions from websites like GitHub, StackOverflow, and others
-> I didn't keep track and document any of them.
-> My solution may not work for others, but Issues and PRs to point out problems and improve the result are welcome.
+> 
+> I didn't keep track nor document any of them.
+> 
+> My solution may not work for others, but Issues and PRs are welcome.
+> 
 > I don't claim any ownership of the used code parts and scripts.
+>
 > This is just a personal documentation of what worked for me and is publicly shared in case it can be of help to others.
