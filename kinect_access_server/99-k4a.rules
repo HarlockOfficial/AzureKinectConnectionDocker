@@ -1,0 +1,5 @@
+SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="045e", ATTR{idProduct}=="097a", MODE="0664", GROUP="plugdev", SYMLINK+="kinect_hub_ss"
+SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="045e", ATTR{idProduct}=="097b", MODE="0664", GROUP="plugdev", SYMLINK+="kinect_hub"
+SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="045e", ATTR{idProduct}=="097c", MODE="0664", GROUP="plugdev", SYMLINK+="kinect_depth"
+SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="045e", ATTR{idProduct}=="097d", MODE="0664", GROUP="plugdev", SYMLINK+="kinect_color"
+SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="045e", ATTR{idProduct}=="097e", MODE="0664", GROUP="plugdev", SYMLINK+="kinect_mic"
