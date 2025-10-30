@@ -9,7 +9,10 @@ BodyTracker::BodyTracker() : tracker_(nullptr), created_(false) {}
 
 BodyTracker::~BodyTracker() { destroy(); }
 
-bool BodyTracker::create(K4ADevice& device, const k4abt_tracker_configuration_t *config) {
+bool BodyTracker::create(K4ADevice& device, const k4abt_tracker_configuration_t* config) {
+    if (created_) {
+        return created_;
+    }
     k4abt_tracker_configuration_t cfg = K4ABT_TRACKER_CONFIG_DEFAULT;
     k4a_calibration_t calibration;
     if (!device.getCalibration(&calibration)) {
@@ -27,8 +30,9 @@ bool BodyTracker::create(K4ADevice& device, const k4abt_tracker_configuration_t 
 
 bool BodyTracker::enqueue(k4a_capture_t capture, int32_t timeout_ms) {
     if (!created_) return false;
-    if (K4A_WAIT_RESULT_SUCCEEDED != k4abt_tracker_enqueue_capture(tracker_, capture, timeout_ms)) {
-        std::cerr << "BodyTracker: enqueue failed\n";
+    k4a_wait_result_t result = k4abt_tracker_enqueue_capture(tracker_, capture, timeout_ms);
+    if (K4A_WAIT_RESULT_SUCCEEDED != result) {
+        std::cerr << "BodyTracker: enqueue failed: " << result << "\n";
         return false;
     }
     return true;

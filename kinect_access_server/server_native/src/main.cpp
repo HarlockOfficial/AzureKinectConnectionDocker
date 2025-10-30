@@ -15,6 +15,8 @@ using json = nlohmann::json;
 static std::atomic<bool> running{true};
 static void sigint_handler(int) { running = false; }
 
+#define TIMEOUT_MS 50
+
 int main() {
     signal(SIGINT, sigint_handler);
     signal(SIGTERM, sigint_handler);
@@ -48,7 +50,7 @@ int main() {
     uint64_t seq = 0;
     while (running) {
         k4a_capture_t capture = nullptr;
-        if (!device.getCapture(capture, 1000)) {
+        if (!device.getCapture(capture, TIMEOUT_MS)) {
             continue;
         }
 
@@ -75,8 +77,8 @@ int main() {
         // body tracker enqueue + pop
         std::string bodies_json = "[]";
         if (tracker.create(device)) {
-            tracker.enqueue(capture, 0);
-            bodies_json = tracker.popResult(0);
+            tracker.enqueue(capture, TIMEOUT_MS);
+            bodies_json = tracker.popResult(TIMEOUT_MS);
         }
 
         // IMU drain
