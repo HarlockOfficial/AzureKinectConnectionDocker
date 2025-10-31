@@ -19,6 +19,15 @@ sub = ctx.socket(zmq.SUB)
 sub.connect("tcp://localhost:5555")
 sub.setsockopt(zmq.SUBSCRIBE, b"frame")
 
+BONES = [
+    (0, 1), (1, 2), (2, 3), (3, 26),      # spine up to head
+    (3, 4), (4, 5), (5, 6), (6, 7), (7, 8), (8, 9), (7, 10),   # left arm
+    (3, 11), (11, 12), (12, 13), (13, 14), (14, 15), (15, 16), (14, 17), # right arm
+    (0, 18), (18, 19), (19, 20), (20, 21),  # left leg
+    (0, 22), (22, 23), (23, 24), (24, 25),  # right leg
+    (26, 27), (27, 28), (28, 29), (27, 30), (30, 31)  # head & face
+]
+
 print("Client connected, waiting frames")
 try:
     while True:
@@ -69,13 +78,28 @@ try:
         # draw skeletons if present (simple)
         if skeleton_frame is not None and len(frame.bodies) > 0:
             for b in frame.bodies:
+                joint_centers = []
                 joints = b["joints"]
-                for j in range(0, len(joints), 4):
-                    x = int(joints[j])
-                    y = int(joints[j+1])
-                    conf = joints[j+3]
-                    if conf > 0.5:
-                        cv2.circle(skeleton_frame, (x, y), 5, (0, 255, 0), -1)
+                for j in range(0, len(joints), 11):
+                    xp = joints[j]
+                    yp = joints[j+1]
+                    zp = joints[j+2]
+                    xo = joints[j+3]
+                    yo = joints[j+4]
+                    zo = joints[j+5]
+                    wo = joints[j+6]
+                    conf = joints[j+7]
+                    x2d = joints[j+8]
+                    y2d = joints[j+9]
+                    conf2d = joints[j+10]
+                    joint = (int(x2d), int(y2d))
+                    joint_centers.append(joint)
+                    if conf2d > 0.5:
+                        cv2.circle(skeleton_frame, joint, 5, (0, 255, 0), -1)
+                for j1, j2 in BONES:
+                    if j1 < len(joint_centers) and j2 < len(joint_centers):
+                        cv2.line(skeleton_frame, joint_centers[j1], joint_centers[j2], (255, 0, 0), 2)
+
             cv2.imshow("color_with_skeleton", skeleton_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
