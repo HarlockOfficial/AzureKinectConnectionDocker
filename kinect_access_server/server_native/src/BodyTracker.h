@@ -22,4 +22,5 @@ private:
     k4abt_tracker_t tracker_;
     bool created_;
     K4ADevice device_;
+    k4a_calibration_t calibration_;
 };

@@ -14,13 +14,12 @@ bool BodyTracker::create(K4ADevice& device, const k4abt_tracker_configuration_t*
         return created_;
     }
     k4abt_tracker_configuration_t cfg = K4ABT_TRACKER_CONFIG_DEFAULT;
-    k4a_calibration_t calibration;
-    if (!device.getCalibration(&calibration)) {
+    if (!device.getCalibration(&calibration_)) {
         std::cerr << "BodyTracker: failed to get calibration\n";
         return false;
     }
     if (config) cfg = *config;
-    if (K4A_RESULT_SUCCEEDED != k4abt_tracker_create(&calibration, cfg, &tracker_)) {
+    if (K4A_RESULT_SUCCEEDED != k4abt_tracker_create(&calibration_, cfg, &tracker_)) {
         std::cerr << "BodyTracker: failed to create\n";
         return false;
     }
@@ -53,10 +52,28 @@ std::string BodyTracker::popResult(int32_t timeout_ms) {
             bj["id"] = i;
             std::vector<float> joints;
             for (int j = 0; j < K4ABT_JOINT_COUNT; ++j) {
+                // position (x,y,z), orientation (x,y,z,w), confidence in 3D coordinate system relative to the kinect
                 auto &p = skeleton.joints[j].position;
-                float x = p.v[0], y = p.v[1], z = p.v[2];
-                float conf = static_cast<float>(skeleton.joints[j].confidence_level);
-                joints.push_back(x); joints.push_back(y); joints.push_back(z); joints.push_back(conf);
+                auto &o = skeleton.joints[j].orientation;
+                float xp = p.v[0], yp = p.v[1], zp = p.v[2];
+                float xo = o.v[0], yo = o.v[1], zo = o.v[2], wo = o.v[3];
+                float conf3d= static_cast<float>(skeleton.joints[j].confidence_level);
+                joints.push_back(xp); joints.push_back(yp); joints.push_back(zp);
+                joints.push_back(xo); joints.push_back(yo); joints.push_back(zo); joints.push_back(wo);
+                joints.push_back(conf3d);
+                // position (x, y) in image space
+                k4a_float2_t p2d;
+                int conf2d;
+                k4a_result_t result;
+                result = k4a_calibration_3d_to_2d(&calibration_, &skeleton.joints[j].position,
+                            K4A_CALIBRATION_TYPE_DEPTH, K4A_CALIBRATION_TYPE_COLOR, &p2d, &conf2d);
+                if (result == K4A_RESULT_FAILED) {
+                    joints.push_back(-1.0f); joints.push_back(-1.0f);
+                    joints.push_back(-1.0f);
+                } else {
+                    joints.push_back(p2d.v[0]); joints.push_back(p2d.v[1]);
+                    joints.push_back(static_cast<float>(conf2d));
+                }
             }
             bj["joints"] = joints;
             out.push_back(bj);
