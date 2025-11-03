@@ -33,7 +33,7 @@ int main() {
     K4ADevice device;
     if (!device.open(0)) return -1;
     if (!device.startCameras()) return -1;
-    bool imu_ok = device.startIMU();
+    device.startIMU();
 
     BodyTracker tracker;
     if (!tracker.create(device)) {
@@ -43,10 +43,40 @@ int main() {
     ZmqPublisher pub;
     if (!pub.bind("tcp://0.0.0.0:5555")) {
         return -1;
-    } else {
-        std::cerr << "Publisher bound to tcp://0.0.0.0:5555\n";
     }
-    
+
+    k4a_calibration_t calibration;
+    device.getCalibration(&calibration);
+    json calibration_json;
+    calibration_json["depth_camera_calibration"]["extrinsics"]["rotation"] = calibration.depth_camera_calibration.extrinsics.rotation;
+    calibration_json["depth_camera_calibration"]["extrinsics"]["translation"] = calibration.depth_camera_calibration.extrinsics.translation;
+    calibration_json["depth_camera_calibration"]["intrinsics"]["type"] = calibration.depth_camera_calibration.intrinsics.type;
+    calibration_json["depth_camera_calibration"]["intrinsics"]["parameter_count"] = calibration.depth_camera_calibration.intrinsics.parameter_count;
+    calibration_json["depth_camera_calibration"]["intrinsics"]["parameters"] = calibration.depth_camera_calibration.intrinsics.parameters.v;
+    calibration_json["depth_camera_calibration"]["resolution_width"] = calibration.depth_camera_calibration.resolution_width;
+    calibration_json["depth_camera_calibration"]["resolution_height"] = calibration.depth_camera_calibration.resolution_height;
+    calibration_json["depth_camera_calibration"]["metric_radius"] = calibration.depth_camera_calibration.metric_radius;
+
+    calibration_json["color_camera_calibration"]["extrinsics"]["rotation"] = calibration.color_camera_calibration.extrinsics.rotation;
+    calibration_json["color_camera_calibration"]["extrinsics"]["translation"] = calibration.color_camera_calibration.extrinsics.translation;
+    calibration_json["color_camera_calibration"]["intrinsics"]["type"] = calibration.color_camera_calibration.intrinsics.type;
+    calibration_json["color_camera_calibration"]["intrinsics"]["parameter_count"] = calibration.color_camera_calibration.intrinsics.parameter_count;
+    calibration_json["color_camera_calibration"]["intrinsics"]["parameters"] = calibration.color_camera_calibration.intrinsics.parameters.v;
+    calibration_json["color_camera_calibration"]["resolution_width"] = calibration.color_camera_calibration.resolution_width;
+    calibration_json["color_camera_calibration"]["resolution_height"] = calibration.color_camera_calibration.resolution_height;
+    calibration_json["color_camera_calibration"]["metric_radius"] = calibration.color_camera_calibration.metric_radius;
+
+    for (int i = 0; i < K4A_CALIBRATION_TYPE_NUM; ++i) {
+        for (int j = 0; j < K4A_CALIBRATION_TYPE_NUM; ++j) {
+            calibration_json["extrinsics"][i][j]["rotation"] = calibration.extrinsics[i][j].rotation;
+            calibration_json["extrinsics"][i][j]["translation"] = calibration.extrinsics[i][j].translation;
+        }
+    }
+
+    calibration_json["depth_mode"] = calibration.depth_mode;
+    calibration_json["color_resolution"] = calibration.color_resolution;
+
+
     uint64_t seq = 0;
     while (running) {
         k4a_capture_t capture = nullptr;
@@ -105,6 +135,7 @@ int main() {
         header["depth_w"] = depth_w; header["depth_h"] = depth_h; header["depth_bytes"] = depth_bytes;
         header["imu_count"] = imu.size();
         header["bodies_bytes"] = bodies_json.size();
+        header["calibration"] = calibration_json;
 
         pub.publishFrame(header.dump(),
                          color_buf, color_bytes,
