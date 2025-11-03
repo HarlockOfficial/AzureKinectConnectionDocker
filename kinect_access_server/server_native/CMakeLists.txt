@@ -18,7 +18,6 @@ add_executable(k4a_server
   src/K4ADevice.cpp
   src/BodyTracker.cpp
   src/ZmqPublisher.cpp
-  src/K4ADevice.cpp
   src/CheckKinect.cpp
 )
 
