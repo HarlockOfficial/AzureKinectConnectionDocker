@@ -14,6 +14,8 @@ public:
                       const uint8_t *depth_buf, size_t depth_bytes,
                       const std::string &bodies_json,
                       const std::vector<uint8_t> &imu_binary);
+    bool publishAudio(const std::string &header_json,
+                      const float *audio_buf, size_t audio_bytes);
     void close();
 private:
     zmq::context_t ctx_;

@@ -50,6 +50,33 @@ bool ZmqPublisher::publishFrame(const std::string &header_json,
     return true;
 }
 
+bool ZmqPublisher::publishAudio(const std::string &header_json,
+                                const float *audio_buf, size_t audio_bytes)
+{
+    try {
+        // Topic
+        zmq::message_t topic_msg("audio", 5);
+        sock_.send(topic_msg, zmq::send_flags::sndmore);
+
+        // Header
+        zmq::message_t header_msg(header_json.data(), header_json.size());
+        sock_.send(header_msg, zmq::send_flags::sndmore);
+
+        // Audio buffer (float values)
+
+        zmq::message_t depth_msg(audio_bytes ? (void*)audio_buf : nullptr, audio_bytes);
+        sock_.send(depth_msg, zmq::send_flags::none);
+    } catch (const zmq::error_t &e) {
+        std::cerr << "ZMQ publish error: " << e.what() << "\n";
+        return false;
+    }
+    return true;
+}
+
 void ZmqPublisher::close() {
-    try { sock_.close(); } catch(...) {}
+    try {
+        sock_.close();
+    } catch (const zmq::error_t &e) {
+        std::cerr << "ZMQ close error: " << e.what() << "\n";
+    }
 }

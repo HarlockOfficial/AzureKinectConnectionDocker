@@ -119,6 +119,9 @@ RUN printf '%s\n' "prefix=/usr" "exec_prefix=\${prefix}" "libdir=\${exec_prefix}
 RUN mkdir -p /usr/local/include/nlohmann \
     && wget -qO /usr/local/include/nlohmann/json.hpp https://github.com/nlohmann/json/releases/download/v3.11.2/json.hpp
 
+# Shodul not be necessary, those libraries are already in the system, but just to be sure
+RUN apt-get install -y libsoundio1 libsoundio-dev
+
 COPY . /opt/k4a_server
 WORKDIR /opt/k4a_server
 
