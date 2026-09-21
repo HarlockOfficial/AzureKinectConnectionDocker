@@ -29,8 +29,8 @@ BONES = [
 ]
 
 print("Client connected, waiting frames")
-try:
-    while True:
+while True:
+    try:
         parts = sub.recv_multipart()
         # parts[0] topic, parts[1] header_json, parts[2] color, parts[3] depth, parts[4] bodies_json, parts[5] imu_bytes
         header = json.loads(parts[1].decode('utf-8'))
@@ -103,7 +103,10 @@ try:
             cv2.imshow("color_with_skeleton", skeleton_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-except (KeyboardInterrupt, SystemExit, Exception) as e:
-    print("Exiting, reason:", e)
-finally:
+    except (KeyboardInterrupt, SystemExit) as e:
+        print("Quitting")
+        break
+    except Exception as e:
+        print("Error, reason:", e)
+else:
     cv2.destroyAllWindows()
