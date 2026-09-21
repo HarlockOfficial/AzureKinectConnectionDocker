@@ -28,7 +28,7 @@ BONES = [
     (26, 27), (27, 28), (28, 29), (27, 30), (30, 31)  # head & face
 ]
 
-print("Client connected, waiting frames")
+print("Client connected, waiting video frames")
 while True:
     try:
         parts = sub.recv_multipart()
